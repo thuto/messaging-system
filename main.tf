@@ -301,11 +301,11 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_db_instance" "postgres" {
   identifier             = "${var.project_name}-db"
   engine                 = "postgres"
-  engine_version         = "13.7"
+  engine_version         = "17.5"
   instance_class         = "db.t3.micro"
   allocated_storage      = 20
   storage_type           = "gp2"
-  db_name                = "messaging-service-db"
+  db_name                = "messagingServiceDb"
   username               = local.db_creds.username
   password               = local.db_creds.password
   db_subnet_group_name   = aws_db_subnet_group.main.name
@@ -332,7 +332,7 @@ resource "aws_dynamodb_table" "main" {
 
 # db credentials in secrets manager
 data "aws_secretsmanager_secret" "db_credentials" {
-  name = "prod/messaging-system/db"
+  name = "dev/messaging-system/db"
 }
 
 data "aws_secretsmanager_secret_version" "current" {
@@ -340,6 +340,7 @@ data "aws_secretsmanager_secret_version" "current" {
 }
 
 locals {
+  
   db_creds = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)
 }
 

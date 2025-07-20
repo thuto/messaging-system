@@ -12,10 +12,16 @@ fi
 echo "Checking health of service at $SERVICE_URL..."
 
 # Send request to the service
-response=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL)
+response=$(curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL" || echo "failed")
+
+# Check if curl failed
+if [ "$response" = "failed" ]; then
+  echo "WARNING: Health check failed! Could not connect to service"
+  exit 1
+fi
 
 # Check if the response is 200 OK
-if [ $response -eq 200 ]; then
+if [ "$response" -eq 200 ]; then
   echo "Health check passed! Service is responding with HTTP $response"
   exit 0
 else

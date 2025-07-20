@@ -7,7 +7,7 @@ resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-  
+
   tags = {
     Name = "${var.project_name}-vpc"
   }
@@ -20,7 +20,7 @@ resource "aws_subnet" "public" {
   cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
-  
+
   tags = {
     Name = "${var.project_name}-public-${count.index + 1}"
   }
@@ -32,7 +32,7 @@ resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = var.availability_zones[count.index]
-  
+
   tags = {
     Name = "${var.project_name}-private-${count.index + 1}"
   }
@@ -41,7 +41,7 @@ resource "aws_subnet" "private" {
 # Internet Gateway
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
-  
+
   tags = {
     Name = "${var.project_name}-igw"
   }
@@ -50,7 +50,7 @@ resource "aws_internet_gateway" "igw" {
 # Elastic IP for NAT Gateway
 resource "aws_eip" "nat" {
   domain = "vpc"
-  
+
   tags = {
     Name = "${var.project_name}-nat-eip"
   }
@@ -60,7 +60,7 @@ resource "aws_eip" "nat" {
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public[0].id
-  
+
   tags = {
     Name = "${var.project_name}-nat"
   }
@@ -69,12 +69,12 @@ resource "aws_nat_gateway" "nat" {
 # Public Route Table
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
-  
+
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
   }
-  
+
   tags = {
     Name = "${var.project_name}-public-rt"
   }
@@ -83,12 +83,12 @@ resource "aws_route_table" "public" {
 # Private Route Table
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
-  
+
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat.id
   }
-  
+
   tags = {
     Name = "${var.project_name}-private-rt"
   }
@@ -113,14 +113,14 @@ resource "aws_security_group" "ecs" {
   name        = "${var.project_name}-ecs-sg"
   description = "Security group for ECS tasks"
   vpc_id      = aws_vpc.main.id
-  
+
   ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -133,14 +133,14 @@ resource "aws_security_group" "rds" {
   name        = "${var.project_name}-rds-sg"
   description = "Security group for RDS instance"
   vpc_id      = aws_vpc.main.id
-  
+
   ingress {
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.ecs.id]
   }
-  
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -152,7 +152,7 @@ resource "aws_security_group" "rds" {
 # ECS Cluster
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-cluster"
-  
+
   setting {
     name  = "containerInsights"
     value = "enabled"
@@ -162,7 +162,7 @@ resource "aws_ecs_cluster" "main" {
 # ECS Task Execution Role
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "${var.project_name}-ecs-execution-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -185,7 +185,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 # ECS Task Role
 resource "aws_iam_role" "ecs_task_role" {
   name = "${var.project_name}-ecs-task-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -204,7 +204,7 @@ resource "aws_iam_role" "ecs_task_role" {
 resource "aws_iam_policy" "task_policy" {
   name        = "${var.project_name}-task-policy"
   description = "Policy for ECS tasks to access SQS and DynamoDB"
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -248,13 +248,13 @@ resource "aws_ecs_task_definition" "app" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
-  
+
   container_definitions = jsonencode([
     {
       name      = "http-echo"
       image     = "hashicorp/http-echo"
       essential = true
-      
+
       portMappings = [
         {
           containerPort = 8080
@@ -262,9 +262,9 @@ resource "aws_ecs_task_definition" "app" {
           protocol      = "tcp"
         }
       ]
-      
+
       command = ["-text", "Hello from the messaging system!"]
-      
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -284,7 +284,7 @@ resource "aws_ecs_service" "app" {
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = 2
   launch_type     = "FARGATE"
-  
+
   network_configuration {
     subnets          = aws_subnet.private[*].id
     security_groups  = [aws_security_group.ecs.id]
@@ -316,15 +316,15 @@ resource "aws_db_instance" "postgres" {
 
 # DynamoDB Table
 resource "aws_dynamodb_table" "main" {
-  name           = "${var.project_name}-table"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "id"
-  
+  name         = "${var.project_name}-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
   attribute {
     name = "id"
     type = "S"
   }
-  
+
   tags = {
     Name = "${var.project_name}-dynamodb-table"
   }
@@ -340,7 +340,7 @@ data "aws_secretsmanager_secret_version" "current" {
 }
 
 locals {
-  
+
   db_creds = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)
 }
 
@@ -352,7 +352,7 @@ resource "aws_sqs_queue" "main" {
   max_message_size          = 262144
   message_retention_seconds = 86400
   receive_wait_time_seconds = 10
-  
+
   tags = {
     Name = "${var.project_name}-sqs-queue"
   }
@@ -373,7 +373,7 @@ resource "aws_sns_topic_subscription" "sqs_subscription" {
 # SQS Queue Policy for SNS
 resource "aws_sqs_queue_policy" "main" {
   queue_url = aws_sqs_queue.main.id
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -409,7 +409,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu" {
   statistic           = "Average"
   threshold           = 80
   alarm_description   = "RDS CPU utilization is too high"
-  
+
   dimensions = {
     DBInstanceIdentifier = aws_db_instance.postgres.id
   }
@@ -425,7 +425,7 @@ resource "aws_cloudwatch_metric_alarm" "sqs_queue_depth" {
   statistic           = "Average"
   threshold           = 100
   alarm_description   = "SQS queue depth is too high"
-  
+
   dimensions = {
     QueueName = aws_sqs_queue.main.name
   }

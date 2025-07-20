@@ -34,3 +34,13 @@ variable "availability_zones" {
   default     = ["eu-west-1a", "eu-west-1b"]
 }
 
+variable "db_username" {
+  description = "Username for the rds postgresql database"
+  type        = string
+}
+
+variable "db_password" {
+  description = "Password for the rds postgresql database"
+  type        = string
+  sensitive   = true
+}

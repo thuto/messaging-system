@@ -1,0 +1,1 @@
+CMD ["-text", "Hello from the my technical assessment!", "-listen", ":8080"]

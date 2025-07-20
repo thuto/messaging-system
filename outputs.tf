@@ -42,3 +42,8 @@ output "sns_topic_arn" {
   description = "ARN of the SNS topic"
   value       = aws_sns_topic.main.arn
 }
+
+output "service_url" {
+  description = "URL of the ECS service"
+  value       = "http://${aws_ecs_service.app.name}.${var.aws_region}.elb.amazonaws.com:8080"
+}

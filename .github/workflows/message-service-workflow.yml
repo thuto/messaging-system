@@ -86,9 +86,9 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve -var="db_username=${{ secrets.DB_USERNAME }}" -var="db_password=${{ secrets.DB_PASSWORD }}"
         
-      # - name: Run Health Check
-      #   run: |
-      #     chmod +x scripts/health_check.sh
-      #     SERVICE_URL=$(terraform output -raw service_url || echo "http://localhost:8080")
-      #     echo "Service URL: $SERVICE_URL"
-      #     ./scripts/health_check.sh "$SERVICE_URL"
+      - name: Run Health Check
+        run: |
+          chmod +x scripts/health_check.sh
+          SERVICE_URL=$(terraform output -raw service_url || echo "http://localhost:8080")
+          echo "Service URL: $SERVICE_URL"
+          ./scripts/health_check.sh "$SERVICE_URL"

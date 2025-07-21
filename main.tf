@@ -115,8 +115,8 @@ resource "aws_security_group" "ecs" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port   = 8080
-    to_port     = 8080
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -302,7 +302,7 @@ resource "aws_ecs_service" "app" {
   load_balancer {
     target_group_arn = aws_lb_target_group.app.arn
     container_name   = "http-echo"
-    container_port   = 8080
+    container_port   = 5678
   }
 }
 
@@ -461,7 +461,7 @@ resource "aws_lb" "app" {
 # ALB Target Group
 resource "aws_lb_target_group" "app" {
   name        = "${var.project_name}-tg"
-  port        = 8080
+  port        = 5678
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
@@ -500,6 +500,13 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 5678
+    to_port     = 5678
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -514,8 +521,22 @@ resource "aws_security_group" "ecs_alb" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port       = 8080
-    to_port         = 8080
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+
+  ingress {
+    from_port       = 5678
+    to_port         = 5678
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
+
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
@@ -525,5 +546,14 @@ resource "aws_security_group" "ecs_alb" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+terraform {
+  backend "s3" {
+    bucket = "mybucket"
+    key    = "path/to/my/key"
+    region = "us-east-1"
   }
 }

@@ -57,6 +57,42 @@ echo $(terraform output -raw service_url)
 ================================================================================================================================
 
 
+CI/CD Pipeline
+The GitHub Actions workflow:
+Validates Terraform syntax
+Builds and pushes Docker images to ECR
+Deploys infrastructure changes
+Runs automated health checks
 
+Monitoring
+CloudWatch log groups for ECS service
+CloudWatch alarms for:
+RDS CPU usage > 80% for 5 minutes
+SQS queue depth > 100 messages for 10 minutes
+
+Cost Optimization Strategies
+Fargate Spot for non-critical workloads: Up to 70% cost savings compared to on-demand Fargate
+Trade-off: Potential for task interruptions
+
+RDS Reserved Instances: Up to 60% cost savings for committed usage
+Trade-off / down-side: Requires upfront commitment (1-3 years)
+
+RDS Optimization Techniques: Right-sizing instance types based on actual usage and traffic
+
+Using Multi-AZ only for production environments: Implementing automated start/stop schedules for non-production
+Using gp3 storage instead of gp2 for better performance at the same cost
+Implementing automated snapshot cleanup policies (can be run on shell script for manual snap shots)
+
+Security Features
+Private subnets for sensitive resources
+Security groups with least-privilege access
+IAM roles following principle of least privilege
+Network ACLs for additional security
+Health Check Script
+
+The repository includes a health check script (scripts/health_check.sh) that:
+Sends a request to the HTTP service
+Logs results and prints a warning if the service is not responding
+Can be used for automated monitoring
 
 

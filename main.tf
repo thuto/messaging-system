@@ -550,10 +550,3 @@ resource "aws_security_group" "ecs_alb" {
 }
 
 
-terraform {
-  backend "s3" {
-    bucket = "mybucket"
-    key    = "path/to/my/key"
-    region = "us-east-1"
-  }
-}

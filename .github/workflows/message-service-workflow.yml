@@ -90,3 +90,4 @@ jobs:
           SERVICE_URL=$(terraform output -raw service_url)
           echo "Service URL: $SERVICE_URL"
           ./scripts/health_check.sh "$SERVICE_URL"
+          

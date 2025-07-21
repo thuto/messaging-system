@@ -167,7 +167,7 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
-# ECS Task Execution Role
+# ECS task execution role
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "${var.project_name}-ecs-execution-role"
 

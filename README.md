@@ -36,3 +36,27 @@ Prerequisites
 -Clone this repository
 
 Set up AWS credentials:
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+export AWS_DEFAULT_REGION="eu-west-1"
+
+
+Intitialise terraform
+Terraform init
+
+
+Apply below config:
+terraform apply -var="db_username=admin" -var="db_password=your-secure-password"
+
+
+Access the service:
+echo $(terraform output -raw service_url)
+
+
+================================================================================================================================
+================================================================================================================================
+
+
+
+
+

@@ -45,5 +45,5 @@ output "sns_topic_arn" {
 
 output "service_url" {
   description = "URL of the ECS service"
-  value       = "http://${aws_ecs_service.app.name}.${var.aws_region}.elb.amazonaws.com:8080"
+  value       = "http://${aws_lb.app.dns_name}"
 }

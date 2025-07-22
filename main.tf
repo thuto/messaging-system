@@ -271,7 +271,7 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
 
-      command = ["-text", "Hello from the messaging system!"]
+      command = ["-text", "Hello from my messaging system! Please hire me ;)"]
 
       logConfiguration = {
         logDriver = "awslogs"

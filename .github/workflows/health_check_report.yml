@@ -1,0 +1,24 @@
+name: Daily App Health Check Report
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Runs every day at 8 AM SA time (6am UTC)
+
+jobs:
+  health-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Ansible Health Check in Container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/ansible:/ansible \
+            -e SERVICE_URL=https://your-app-url.com \
+            -e SMTP_SERVER=${{ secrets.SMTP_SERVER }} \
+            -e SMTP_PORT=${{ secrets.SMTP_PORT }} \
+            -e EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }} \
+            -e EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }} \
+            -e EMAIL_TO=${{ secrets.EMAIL_TO }} \
+            cytopia/ansible ansible-playbook /ansible/post_deploy.yml

@@ -1,0 +1,41 @@
+---
+- name: Post Deployment Health Check
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    service_url: "{{ lookup('env', 'SERVICE_URL') }}"
+    report_file: "/tmp/health_report.txt"
+
+  tasks:
+    - name: Check if service is reachable
+      uri:
+        url: "{{ service_url }}"
+        return_content: yes
+        status_code: 200
+      register: response
+      ignore_errors: yes
+
+    - name: Create health report
+      copy:
+        content: |
+          Health Check Report
+          ===================
+          Timestamp: {{ ansible_date_time.iso8601 }}
+          URL: {{ service_url }}
+          Status: {{ 'PASS' if response.status == 200 else 'FAIL' }}
+          Response: {{ response.content | default('No content') }}
+
+        dest: "{{ report_file }}"
+
+    - name: Email report
+      community.general.mail:
+        host: "{{ lookup('env', 'SMTP_SERVER') }}"
+        port: "{{ lookup('env', 'SMTP_PORT') | int }}"
+        username: "{{ lookup('env', 'EMAIL_USERNAME') }}"
+        password: "{{ lookup('env', 'EMAIL_PASSWORD') }}"
+        to: "{{ lookup('env', 'EMAIL_TO') }}"
+        subject: "🩺 App Health Check Report - {{ ansible_date_time.date }}"
+        body: "{{ lookup('file', report_file) }}"
+        secure: starttls

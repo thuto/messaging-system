@@ -92,6 +92,8 @@ jobs:
       - name: Run Health Check
         run: |
           chmod +x scripts/health_check.sh
+          cd modules
           SERVICE_URL=$(terraform output -raw service_url)
+          cd ../scripts
           echo "Service URL: $SERVICE_URL"
-          ./scripts/health_check.sh "$SERVICE_URL"
+          ./health_check.sh "$SERVICE_URL"

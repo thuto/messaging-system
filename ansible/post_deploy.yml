@@ -39,3 +39,4 @@
         subject: "🩺 App Health Check Report - {{ ansible_date_time.date }}"
         body: "{{ lookup('file', report_file) }}"
         secure: starttls
+

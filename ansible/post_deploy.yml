@@ -2,7 +2,7 @@
 - name: Post Deployment Health Check
   hosts: localhost
   connection: local
-  gather_facts: no
+  gather_facts: yes
 
   vars:
     service_url: "{{ lookup('env', 'SERVICE_URL') }}"
